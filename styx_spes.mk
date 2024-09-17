@@ -11,11 +11,14 @@ $(call inherit-product, $(SRC_TARGET_DIR)/product/full_base_telephony.mk)
 # Inherit from spes/spesn device
 $(call inherit-product, device/xiaomi/spes/device.mk)
 
+# MiuiCamera
+$(call inherit-product-if-exists, vendor/xiaomi/miuicamera/config.mk)
+
 # Inherit some common Styx stuff.
-$(call inherit-product, vendor/styx/config/common_full_phone.mk)
+$(call inherit-product, vendor/styx/config/common.mk)
 
 # Product Specifics
-PRODUCT_NAME := aosp_spes
+PRODUCT_NAME := styx_spes
 PRODUCT_DEVICE := spes
 PRODUCT_BRAND := Redmi
 PRODUCT_MODEL := Redmi Note 11
