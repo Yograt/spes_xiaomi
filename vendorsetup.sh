@@ -14,7 +14,7 @@ rm -rf hardware/lineage/compat/Android.bp
 
 # Kernel & Vendor Sources
 git clone https://github.com/ofcsayan/vendor_xiaomi_spes -b 15 vendor/xiaomi/spes --depth=1 
-git clone https://github.com/TheMatheusDev/android_kernel_xiaomi_sm6225-2.git kernel/xiaomi/sm6225 --depth=1
+git clone --depth=1 https://github.com/tanvirr007/kernel_xiaomi_sm6225 -b NaughtySilver kernel/xiaomi/sm6225
 
 # Sepolicy fix for imsrcsd
 echo -e "${color}Switch back to legacy imsrcsd sepolicy${end}"
