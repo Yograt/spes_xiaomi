@@ -1,24 +1,48 @@
-# ROM source patches
+#!/bin/bash
 
-color="\033[0;32m"
-end="\033[0m"
+# Define color codes
+GREEN="\033[0;32m"
+YELLOW="\033[1;33m"
+END="\033[0m"
 
-echo -e "${color}Applying patches${end}"
-sleep 1
+# Define branches
+VENDOR_BRANCH="15.0"
+KERNEL_BRANCH="NaughtySilver"
+HARDWARE_BRANCH="lineage-22.0"
 
-# Remove pixel headers to avoid conflicts
+# Function to check if a directory exists
+check_and_clone() {
+    local dir=$1
+    local repo=$2
+    local branch=$3
+    if [ -d "$dir" ]; then
+        echo -e "${YELLOW}• $dir already exists. Skipping cloning...${END}"
+    else
+        echo -e "${GREEN}Cloning $dir from $repo (branch: ${YELLOW}$branch${GREEN})...${END}"
+        git clone --depth=1 -b "$branch" "$repo" "$dir"
+    fi
+}
+
+# Apply patches and check for conflicting files
+echo -e "${YELLOW}Applying patches and cloning device sources...${END}"
+
+# Remove conflicting files
+echo -e "${GREEN}• Removing conflicting files...${END}"
 rm -rf hardware/google/pixel/kernel_headers/Android.bp
-
-# Remove hardware/lineage/compat to avoid conflicts
 rm -rf hardware/lineage/compat/Android.bp
 
-# Kernel & Vendor Sources
-git clone https://github.com/ofcsayan/vendor_xiaomi_spes -b 14 vendor/xiaomi/spes
-git clone https://github.com/TheMatheusDev/android_kernel_xiaomi_sm6225-2.git kernel/xiaomi/sm6225
+# Handle legacy imsrcsd sepolicy
+SEPOLICY_PATH="device/qcom/sepolicy_vndr/legacy-um/qva/vendor/bengal/legacy-ims/hal_rcsservice.te"
+if [ -f "$SEPOLICY_PATH" ]; then
+    echo -e "${GREEN}Switching to legacy imsrcsd sepolicy...${END}"
+    cp "$SEPOLICY_PATH" device/qcom/sepolicy_vndr/legacy-um/qva/vendor/bengal/ims/hal_rcsservice.te
+else
+    echo -e "${YELLOW}• Missing legacy imsrcsd sepolicy file. Skipping...${END}"
+fi
 
-# Sepolicy fix for imsrcsd
-echo -e "${color}Switch back to legacy imsrcsd sepolicy${end}"
-rm -rf device/qcom/sepolicy_vndr/legacy-um/qva/vendor/bengal/ims/imsservice.te
-cp device/qcom/sepolicy_vndr/legacy-um/qva/vendor/bengal/legacy-ims/hal_rcsservice.te device/qcom/sepolicy_vndr/legacy-um/qva/vendor/bengal/ims/hal_rcsservice.te
+# Clone required repositories if not already present
+check_and_clone "vendor/xiaomi/spes" "https://github.com/spes-development/vendor_xiaomi_spes" "$VENDOR_BRANCH"
+check_and_clone "kernel/xiaomi/sm6225" "https://github.com/spes-development/kernel_xiaomi_sm6225" "$KERNEL_BRANCH"
+check_and_clone "hardware/xiaomi" "https://github.com/LineageOS/android_hardware_xiaomi" "$HARDWARE_BRANCH"
 
-mv vendorsetup.sh vendorsetup.txt
+echo -e "${YELLOW}All patches applied successfully. Device sources are ready!${END}"
